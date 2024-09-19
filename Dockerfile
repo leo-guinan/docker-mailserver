@@ -229,6 +229,8 @@ COPY \
   target/postfix/sender_login_maps.pcre \
   /etc/postfix/maps/
 
+COPY target/postfix/postfix-accounts.cf /tmp/docker-mailserver/postfix-accounts.cf
+
 RUN <<EOF
   : >/etc/aliases
   sedfile -i 's/START_DAEMON=no/START_DAEMON=yes/g' /etc/default/fetchmail
@@ -305,7 +307,9 @@ COPY target/scripts/helpers /usr/local/bin/helpers
 COPY target/scripts/startup/setup.d /usr/local/bin/setup.d
 
 # Add Python and Flask
-RUN apt-get update && apt-get install -y python3 python3-pip
+RUN apt-get update && apt-get install -y python3 python3-venv
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 RUN pip3 install Flask
 
 # Add health check script
@@ -354,3 +358,4 @@ LABEL org.opencontainers.image.source="https://github.com/docker-mailserver/dock
 LABEL org.opencontainers.image.revision=${VCS_REVISION}
 LABEL org.opencontainers.image.version=${DMS_RELEASE}
 ENV DMS_RELEASE=${DMS_RELEASE}
+
